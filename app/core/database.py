@@ -19,6 +19,13 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except Exception as e:
+        # Only rollback for database-related exceptions
+        # HTTPException from FastAPI should not trigger rollback
+        from fastapi import HTTPException
+        if not isinstance(e, HTTPException):
+            db.rollback()
+        raise
     finally:
         db.close()
 
